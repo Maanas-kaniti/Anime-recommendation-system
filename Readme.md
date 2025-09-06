@@ -1,79 +1,98 @@
-# Anime Recommendation System Scraper
+# Anime Recommendation System
 
-This project scrapes anime data from Anime-Planet and stores it in a CSV file for further analysis or recommendation system development.
+This project scrapes anime data from Anime-Planet, cleans and processes it, and provides a content-based recommendation system using genres and descriptions.
 
-## File Overview
+## Project Structure & File Overview
+
+```
+Anime-recommendation-system/
+│
+├── scraper.py
+├── Back_up_scraper.py
+├── requirements.txt
+├── Readme.md
+│
+├── data/
+│   ├── anime_planet_full_details.csv
+│   ├── anime_planet_full_details_.csv
+│   └── anime_planet_full_details_cleaned.csv
+│
+├── anime_recommender.ipynb
+└── clean-data.ipynb
+```
 
 ### `scraper.py`
 
-- **Purpose:** Main scraper script for Anime-Planet.
-- **Functionality:**
-  - Uses Selenium to automate browser actions and scrape anime details (title, alt title, type, year, rating, genres, source, description, image URL, page).
-  - Resumes scraping from the last completed page by reading the `page` column in the CSV.
-  - Appends new data to `data/anime_planet_full_details.csv`.
-  - Handles stealth browser setup to avoid detection.
-  - Scrapes all pages up to a specified maximum.
+- **Purpose:** Main web scraper for Anime-Planet.
+- **Details:** Uses Selenium to collect anime details (title, alt_title, type, year, rating, genres, source, description, img_url, page) and saves them to `data/anime_planet_full_details.csv`.
 
 ### `Back_up_scraper.py`
 
-- **Purpose:** Backup/rescrape script for specific pages.
-- **Functionality:**
-  - Uses Selenium to scrape only selected pages (useful for fixing missing or corrupted data).
-  - Checks for duplicate titles before appending to the CSV.
-  - Appends only new/unique anime entries to `data/anime_planet_full_details.csv`.
-  - Stealth browser setup similar to the main scraper.
+- **Purpose:** Backup/specific page scraper.
+- **Details:** Scrapes selected pages, checks for duplicates, and appends unique entries to the main CSV.
 
 ### `requirements.txt`
 
-- **Purpose:** Lists Python dependencies for the project.
-- **Contents:**
-  - `selenium` (browser automation)
-  - `webdriver-manager` (manages browser drivers)
-  - `pandas` (data manipulation)
-  - `beautifulsoup4` (HTML parsing, not currently used in main scripts)
-  - `scikit-learn` (machine learning, not currently used in main scripts)
-  - `tqdm` (progress bars, not currently used in main scripts)
+- **Purpose:** Lists all Python dependencies.
+- **Contents:** selenium, webdriver-manager, pandas, beautifulsoup4, scikit-learn, tqdm.
 
 ### `data/anime_planet_full_details.csv`
 
-- **Purpose:** Stores all scraped anime data.
-- **Contents:**
-  - Columns: `title`, `alt_title`, `type`, `year`, `rating`, `genres`, `source`, `description`, `img_url`, `page`
-  - Each row contains details for one anime entry scraped from Anime-Planet.
+- **Purpose:** Raw scraped anime data.
+- **Columns:** `title`, `alt_title`, `type`, `year`, `rating`, `genres`, `source`, `description`, `img_url`, `page`.
+
+### `data/anime_planet_full_details_.csv`
+
+- **Purpose:** Intermediate cleaned data file.
+- **Details:** Contains additional columns like `type_only` and `episodes` extracted from the raw data.
+
+### `data/anime_planet_full_details_cleaned.csv`
+
+- **Purpose:** Final cleaned dataset for analysis and recommendations.
+- **Details:** Missing values handled, genres formatted, episode numbers cleaned.
+
+### `clean-data.ipynb`
+
+- **Purpose:** Data cleaning and preprocessing notebook.
+- **Details:** Loads raw data, extracts and cleans columns, handles missing values, and saves cleaned data for use in recommendations.
+
+### `anime_recommender.ipynb`
+
+- **Purpose:** Main notebook for building and running the recommendation system.
+- **Details:**
+  - Loads cleaned data.
+  - Processes genres and descriptions.
+  - Vectorizes features using CountVectorizer (genres) and TfidfVectorizer (descriptions).
+  - Computes similarity matrices.
+  - Provides functions to recommend anime by genre or description similarity.
 
 ## Usage
 
 1. **Install dependencies:**
+
    ```sh
    pip install -r requirements.txt
    ```
-2. **Run the main scraper:**
+
+2. **Scrape data:**
 
    ```sh
    python scraper.py
    ```
 
-   - Scrapes all anime pages, resumes from last page if interrupted.
+3. **Clean data:**
 
-3. **Run the backup/rescrape script:**
-   ```sh
-   python Back_up_scraper.py
-   ```
-   - Scrapes only specified pages, skips duplicates.
+   - Run `clean-data.ipynb` in Jupyter to process and clean the raw CSV.
+
+4. **Run recommendations:**
+   - Open `anime_recommender.ipynb` and use the provided functions to get anime recommendations by genre or description.
 
 ## Notes
 
-- Both scripts require Chrome and ChromeDriver.
-- Output is saved to `data/anime_planet_full_details.csv`.
-- For large scrapes, ensure a stable internet connection and sufficient disk space.
-
-## Folder Structure
-
-- `scraper.py` – Main scraper script.
-- `Back_up_scraper.py` – Backup/specific page scraper.
-- `requirements.txt` – Python dependencies.
-- `data/anime_planet_full_details.csv` – Output data file.
+- All data files are stored in the `data/` directory.
+- The recommendation system uses content-based filtering (genres and descriptions).
+- You can extend the notebooks to use other features (ratings, year, etc.) for more advanced recommendations.
 
 ---
 
-Feel free to modify the scripts or add new features for your
+Feel free to explore, modify, and build upon this project for your anime recommendation needs!
