@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const Anime = require("./models/Anime");
+const { spawn } = require("child_process");
 dotenv.config();
 
 mongoose
@@ -15,17 +16,30 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/anime", async (req, res) => {
-  const allanime = await Anime.find().limit(5);
+  const allanime = await Anime.find().select("title -_id");
   return res.json(allanime);
 });
 
-app.get("/anime/:recomeder", async (req, res) => {
+app.get("/anime/recommender", async (req, res) => {
   try {
-    const anime = await Anime.find({ rating: req.params.rating }).select(
-      "title -_id"
-    );
+    const title = req.query.title || "";
+    const python = spawn("python", ["recommender.py", title]);
+    let data = "";
+    python.stdout.on("data", (chunk) => {
+      data += chunk.toString();
+    });
+    python.stderr.on("data", (err) => {
+      console.error("Python error:", err.toString());
+    });
 
-    return res.json(anime);
+    python.on("close", () => {
+      try {
+        const result = JSON.parse(data);
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({ error: "Invalid response from recommender" });
+      }
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });

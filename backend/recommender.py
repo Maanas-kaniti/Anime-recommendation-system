@@ -4,23 +4,20 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 from pymongo import MongoClient
-
+from dotenv import load_dotenv
+import os
 # ----------------------------
 # 1. Connect to MongoDB Atlas
 # ----------------------------
-client = MongoClient("mongodb+srv://kanitimaanas_db_user:fEgO1ZOnUtRyBUKR@cluster0.wa6xl5p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")   # <-- replace with process.env.MONGO_URI
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI)   # <-- replace with process.env.MONGO_URI
 db = client["test"]              # e.g., "animeDB"
 collection = db["animes"]                # same collection as your Node app
 
 # ----------------------------
 # 2. Load data into pandas
 # ----------------------------
-data = pd.DataFrame(list(collection.find({}, {
-    "_id": 0,
-    "title": 1,
-    "genres": 1,
-    "description": 1
-})))
+data = pd.DataFrame(list(collection.find({})))
 
 # Combine genres + description for better recommendations
 data["content"] = data["genres"].apply(lambda g: " ".join(g) if isinstance(g, list) else "") + " " + data["description"].fillna("")
@@ -45,18 +42,17 @@ def recommend(title, num_recs=5):
     sim_scores = linear_kernel(tfidf_matrix[idx], tfidf_matrix).flatten()
     # Get indices of top matches (excluding itself)
     top_indices = sim_scores.argsort()[::-1][1:num_recs+1]
-    return [
-        {
-            "_id": str(data.iloc[i].get("_id", "")),
-            "title": data.iloc[i]["title"]
-        }
-        for i in top_indices
-    ]
+    recommendations = []
+    for i in top_indices:
+        anime_data = data.iloc[i].to_dict()
+        anime_data["_id"] = str(anime_data["_id"])  # Convert ObjectId to string
+        recommendations.append(anime_data)
+    return recommendations
 
 # ----------------------------
 # 5. CLI entrypoint (for Node)
 # ----------------------------
 if __name__ == "__main__":
     title = sys.argv[1] if len(sys.argv) > 1 else ""
-    results = recommend("Naruto")
+    results = recommend(title)
     print(json.dumps(results))
