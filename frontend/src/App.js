@@ -18,10 +18,21 @@ function App() {
     setRecommendations([]);
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/recommend?title=${searchTerm}`
+        `http://localhost:5000/api/recommend?title=${encodeURIComponent(
+          searchTerm
+        )}`
       );
       console.log("API response:", response.data);
-      setRecommendations(response.data || []);
+      // If the API returns an error object, show it. If it returns an array,
+      // set recommendations. Protect against non-array responses.
+      if (response.data && Array.isArray(response.data)) {
+        setRecommendations(response.data);
+      } else if (response.data && response.data.error) {
+        setError(response.data.error);
+        setRecommendations([]);
+      } else {
+        setRecommendations([]);
+      }
     } catch (err) {
       setError("Failed to fetch recommendations. Please try again.");
     } finally {
@@ -46,7 +57,24 @@ function App() {
         {recommendations.length > 0 ? (
           <ul>
             {recommendations.map((anime, index) => (
-              <li key={index}>{anime}</li>
+              <li key={anime._id || index} className="anime-item">
+                {anime.img_url && (
+                  <img
+                    src={anime.img_url}
+                    alt={anime.title}
+                    className="anime-thumb"
+                  />
+                )}
+                <div className="anime-meta">
+                  <strong>{anime.title}</strong>
+                  {anime.similarity_score !== undefined && (
+                    <span className="score"> — {anime.similarity_score.toFixed(3)}</span>
+                  )}
+                  {anime.description && (
+                    <p className="desc">{anime.description.slice(0, 140)}{anime.description.length>140?"...":""}</p>
+                  )}
+                </div>
+              </li>
             ))}
           </ul>
         ) : (
