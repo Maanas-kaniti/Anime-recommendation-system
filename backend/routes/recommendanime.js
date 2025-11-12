@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
     const title = req.query.title || "";
     // Spawn Python script from the backend directory with proper working directory
     const python = spawn("python", ["recommender.py", title], {
-      cwd: __dirname // Run from the backend directory where recommender.py is located
+      cwd: __dirname, // Run from the backend directory where recommender.py is located
     });
     let data = "";
     python.stdout.on("data", (chunk) => {
@@ -21,7 +21,9 @@ router.get("/", async (req, res) => {
     python.on("close", (code) => {
       try {
         if (!data.trim()) {
-          return res.status(500).json({ error: "No response from recommender" });
+          return res
+            .status(500)
+            .json({ error: "No response from recommender" });
         }
         const result = JSON.parse(data);
         res.json(result);

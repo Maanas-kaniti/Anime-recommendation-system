@@ -68,10 +68,16 @@ function App() {
                 <div className="anime-meta">
                   <strong>{anime.title}</strong>
                   {anime.similarity_score !== undefined && (
-                    <span className="score"> — {anime.similarity_score.toFixed(3)}</span>
+                    <span className="score">
+                      {" "}
+                      — {anime.similarity_score.toFixed(3)}
+                    </span>
                   )}
                   {anime.description && (
-                    <p className="desc">{anime.description.slice(0, 140)}{anime.description.length>140?"...":""}</p>
+                    <p className="desc">
+                      {anime.description.slice(0, 140)}
+                      {anime.description.length > 140 ? "..." : ""}
+                    </p>
                   )}
                 </div>
               </li>
